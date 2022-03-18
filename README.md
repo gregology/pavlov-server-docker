@@ -12,6 +12,8 @@ docker run --name pavlov -d \
   gregology/pavlov-server:latest
 ```
 
+Your game should appear on the [PC Servers List](https://pavlovhorde.com/pcServers/).
+
 ### Sample Game.ini
 ```
 [/Script/Pavlov.DedicatedServer]

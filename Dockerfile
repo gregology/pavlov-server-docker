@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 # Install prerequisites
-RUN apt update && apt install -y gdb curl lib32gcc1 libc++-dev unzip
+RUN apt update && apt upgrade -y && apt install -y gdb curl lib32gcc1 libc++-dev unzip
 
 # Create steam user
 RUN useradd -m -N -s /bin/bash -u 1000 -p 'password' steam
