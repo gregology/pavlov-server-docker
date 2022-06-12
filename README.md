@@ -30,3 +30,12 @@ See the [docs](http://wiki.pavlov-vr.com/index.php?title=Dedicated_server#Config
 76561198057346920 # Gregology
 ```
 Note: Use [Steam ID Finder}(https://www.steamidfinder.com/) to look up a Steam user ID
+
+### Build
+
+```
+docker build -t gregology/pavlov-server:0.6 .
+docker push gregology/pavlov-server:0.6
+docker tag gregology/pavlov-server:0.6 gregology/pavlov-server:latest
+docker push gregology/pavlov-server:latest
+```
