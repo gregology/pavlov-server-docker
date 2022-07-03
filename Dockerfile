@@ -1,7 +1,7 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # Install prerequisites
-RUN apt update && apt upgrade -y && apt install -y gdb curl lib32gcc1 libc++-dev unzip
+RUN apt update && apt upgrade -y && apt install -y gdb curl lib32gcc-s1 libc++-dev unzip cron nano
 
 # Create steam user
 RUN useradd -m -N -s /bin/bash -u 1000 -p 'password' steam
@@ -19,4 +19,9 @@ RUN mkdir -p /home/steam/.steam/sdk64
 RUN cp /home/steam/Steam/steamapps/common/Steamworks\ SDK\ Redist/linux64/steamclient.so /home/steam/.steam/sdk64/steamclient.so
 RUN cp /home/steam/Steam/steamapps/common/Steamworks\ SDK\ Redist/linux64/steamclient.so /home/steam/pavlovserver/Pavlov/Binaries/Linux/steamclient.so
 
-CMD ["/home/steam/pavlovserver/PavlovServer.sh"]
+COPY pavlov_update.sh /home/steam/pavlov_update.sh
+RUN mkdir /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_logs/pavlov_update.sh.log
+
+COPY pavlov_start.sh /home/steam/pavlov_start.sh
+
+CMD ["/home/steam/pavlov_start.sh"]

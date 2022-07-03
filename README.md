@@ -1,5 +1,9 @@
 # Pavlov Server
 
+This container updates Pavlov VR and Steam on start
+
+## Command
+
 ```
 docker run --name pavlov -d \
   -p 7777:7777/udp \
@@ -18,7 +22,7 @@ Your game should appear on the [PC Servers List](https://pavlovhorde.com/pcServe
 ```
 [/Script/Pavlov.DedicatedServer]
 bEnabled=true
-ServerName=Gregology
+ServerName=MyAwesomeServer
 bSecured=true
 MapRotation=(MapId="UGC2456742088")
 ```
@@ -27,15 +31,15 @@ See the [docs](http://wiki.pavlov-vr.com/index.php?title=Dedicated_server#Config
 
 ### Sample mods.txt
 ```
-76561198057346920 # Gregology
+76561198057346920 # BabyArmour
 ```
 Note: Use [Steam ID Finder}(https://www.steamidfinder.com/) to look up a Steam user ID
 
 ### Build
 
 ```
-docker build -t gregology/pavlov-server:0.6 .
-docker push gregology/pavlov-server:0.6
-docker tag gregology/pavlov-server:0.6 gregology/pavlov-server:latest
+docker build -t gregology/pavlov-server:0.15 .
+docker push gregology/pavlov-server:0.15
+docker tag gregology/pavlov-server:0.15 gregology/pavlov-server:latest
 docker push gregology/pavlov-server:latest
 ```
