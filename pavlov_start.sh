@@ -2,4 +2,4 @@
 
 /home/steam/pavlov_update.sh
 
-/home/steam/pavlovserver/PavlovServer.sh
+/home/steam/pavlovserver/PavlovServer.sh -PORT=$PORT

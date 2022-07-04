@@ -1,5 +1,8 @@
 FROM ubuntu:22.04
 
+# Default port
+ENV PORT 7777
+
 # Install prerequisites
 RUN apt update && apt upgrade -y && apt install -y gdb curl lib32gcc-s1 libc++-dev unzip cron nano
 
