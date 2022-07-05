@@ -54,10 +54,10 @@ Pavlovserver is functionally single threaded (one thread does vast majority of w
 Here are some performance stats for a docker host with an Intel Core i9-9880H CPU @ 2.30GHz, 32GB ram, and a 1Gbps fiber connection. The docker host is also running a few other non Pavlov containers. This setup could comfortably run half a dozen Pavlov VR servers.
 
 | SERVER                       | # PLAYERS | MAP                          | CPU %   | MEM USAGE / LIMIT   | MEM % | NET I/0         | BLOCK I/0     |
-|------------------------------|---------|------------------------------|---------|---------------------|-------|-----------------|---------------|
-| BabyArmour - Survival Island |       0 | Survival Island              |  68.91% | 710MiB / 31.26GiB   | 2.22% | 295MB / 50. 8MB | 223MB / 142MB |
-| BabyArmour - Escape The Dead |       8 | Escape The Dead: Aftermath   | 117.59% | 916.4MiB / 31.26GiB | 2.86% | 81.4MB / 297MB  | 821MB / 142MB |
-| BabyArmour - Mako Reactor    |       0 | ze_FFVII_Mako_Reactor_pav_v1 |  29.76% | 505.4MiB / 31.26GiB | 1.86% | 16.2MB / 33.7MB | 356MB / 135MB |
+|------------------------------|-----------|------------------------------|---------|---------------------|-------|-----------------|---------------|
+| BabyArmour - Survival Island |         0 | Survival Island              |  68.91% | 710MiB / 31.26GiB   | 2.22% | 295MB / 50. 8MB | 223MB / 142MB |
+| BabyArmour - Escape The Dead |         8 | Escape The Dead: Aftermath   | 117.59% | 916.4MiB / 31.26GiB | 2.86% | 81.4MB / 297MB  | 821MB / 142MB |
+| BabyArmour - Mako Reactor    |         0 | ze_FFVII_Mako_Reactor_pav_v1 |  29.76% | 505.4MiB / 31.26GiB | 1.86% | 16.2MB / 33.7MB | 356MB / 135MB |
 
 Increasing the player load increases memory & CPU usage.
 
