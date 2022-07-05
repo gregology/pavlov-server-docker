@@ -39,6 +39,18 @@ See the [docs](http://wiki.pavlov-vr.com/index.php?title=Dedicated_server#Config
 ```
 Note: Use [Steam ID Finder](https://www.steamidfinder.com/) to look up a Steam user ID.
 
+### Performance
+
+Pavlovserver is functionally single threaded (one thread does vast majority of work). More CPUs only help if you are running more servers. More clockspeed = higher performance = more users per server.
+
+Here are some performance stats for a docker host with an Intel Core i9-9880H CPU @ 2.30GHz, 32GB ram, and a 1Gbps fiber connection. The docker host is also running a few other non Pavlov containers. This setup could comfortably run half a dozen Pavlov VR servers.
+
+| SERVER                       | # PLAYERS | MAP                          | CPU %   | MEM USAGE / LIMIT   | MEM % | NET I/0         | BLOCK I/0     |
+|------------------------------|---------|------------------------------|---------|---------------------|-------|-----------------|---------------|
+| BabyArmour - Survival Island |       0 | Survival Island              |  68.91% | 94MiB / 31.26GiB    | 2.20% | 295MB / 50. 8MB | 223MB / 142MB |
+| BabyArmour - Escape The Dead |       8 | Escape The Dead: Aftermath   | 117.59% | 916.4MiB / 31.26GiB | 2.86% | 81.4MB / 297MB  | 821MB / 142MB |
+| BabyArmour - Mako Reactor    |       0 | ze_FFVII_Mako_Reactor_pav_v1 |  29.76% | 505.4MiB / 31.26GiB | 1.86% | 16.2MB / 33.7MB | 356MB / 135MB |
+
 If you're having issues, please submit an [issue](https://github.com/gregology/pavlov-server-docker/issues) and ping me.
 
 ### Build
