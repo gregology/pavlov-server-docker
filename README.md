@@ -67,6 +67,29 @@ Increasing the player load increases memory & CPU usage.
 
 Note: the other two servers are still running, I just removed them for clarity.
 
+### Free hosting options
+
+A server with 1Gb of ram can run a small map with a few players which means there are free VMs capable of running Pavlov server. Oracle offers a free VM which can comfortably run a small Pavlov server. This video shows a server with 4 players running smoothly on a free Oracle VM.
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/hCEoyOKGP08/0.jpg)](https://www.youtube.com/watch?v=hCEoyOKGP08)
+
+Here is that server's `Game.ini` file.
+
+```
+[/Script/Pavlov.DedicatedServer]
+bEnabled=true
+ServerName=Oracle free tier VM
+bSecured=true
+bCustomServer=true
+LimitedAmmoType=0
+TimeLimit=0
+MaxPlayers=4
+#MapRotation=(MapId="UGC1411741987", GameMode="DM") # Office 4.21
+#MapRotation=(MapId="UGC2006865873", GameMode="DM") # Construction Small
+MapRotation=(MapId="UGC2252266456", GameMode="DM") # Laser Tag Small
+```
+
+
 If you're having issues, please submit an [issue](https://github.com/gregology/pavlov-server-docker/issues) and ping me.
 
 ### Build
