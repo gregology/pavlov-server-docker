@@ -14,7 +14,7 @@ USER steam
 RUN mkdir /home/steam/Steam && cd /home/steam/Steam && curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -
 
 # Host Pavlov
-RUN /home/steam/Steam/steamcmd.sh +login anonymous +force_install_dir /home/steam/pavlovserver +app_update 622970 +exit && chmod +x /home/steam/pavlovserver/PavlovServer.sh
+RUN /home/steam/Steam/steamcmd.sh +force_install_dir /home/steam/pavlovserver +login anonymous +app_update 622970 +exit && chmod +x /home/steam/pavlovserver/PavlovServer.sh
 
 # Start Steam
 RUN /home/steam/Steam/steamcmd.sh +login anonymous +app_update 1007 +quit
