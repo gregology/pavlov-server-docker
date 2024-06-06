@@ -6,6 +6,10 @@ ENV PORT 7777
 # Install prerequisites
 RUN apt update && apt upgrade -y && apt install -y gdb curl lib32gcc-s1 libc++-dev unzip cron nano
 
+# Patched issue since v29
+RUN rm /usr/lib/x86_64-linux-gnu/libc++.so 
+RUN ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so 
+
 # Create steam user
 RUN useradd -m -N -s /bin/bash -u 1000 -p 'password' steam
 USER steam
