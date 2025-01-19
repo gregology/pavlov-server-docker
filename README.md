@@ -25,14 +25,24 @@ Your game should appear on the [PC Servers List](https://pavlovhorde.com/pcServe
 ```
 [/Script/Pavlov.DedicatedServer]
 bEnabled=true
-ServerName=MyAwesomeServer
+ServerName="My_private_idaho" 
+MaxPlayers=16
+ApiKey="ABC123FALSEKEYDONTUSEME"
 bSecured=true
-bCustomServer=true
-LimitedAmmoType=2
-TimeLimit=0
-MapRotation=(MapId="UGC2443220615") # Survival Island
+bCustomServer=true 
+bVerboseLogging=false 
+bCompetitive=false #This only works for SND
+bWhitelist=false 
+RefreshListTime=120 
+LimitedAmmoType=0 
+TickRate=90
+TimeLimit=60
+AFKTimeLimit=300
+MapRotation=(MapId="datacenter", GameMode="DM")
 ```
-Note: MapIds starting with `UGC` are from the [Steam workshop](https://steamcommunity.com/app/555160/workshop/). Append `UGC` to the id from the url of the map you want to use.  
+
+Note: The map system has switched from the steam workshop to [modio]( https://mod.io/g/pavlov) for MapIds. Append "UGC" to the resouce ID from the modio page to generate a MapId. For example the map gravity https://mod.io/g/pavlov/m/gravity1 has a resource ID of 2773760 so the map ID to add to the server would be "UGC2773760". When a match ends, the server will load the next map in the rotation.
+
 See the [docs](http://wiki.pavlov-vr.com/index.php?title=Dedicated_server#Configuring_Game.ini) for more game configuration options.
 
 ### Sample mods.txt
@@ -95,8 +105,8 @@ If you're having issues, please submit an [issue](https://github.com/gregology/p
 ### Build
 
 ```
-docker build -t gregology/pavlov-server:0.16 .
-docker push gregology/pavlov-server:0.16
-docker tag gregology/pavlov-server:0.16 gregology/pavlov-server:latest
+docker build -t gregology/pavlov-server:0.22 .
+docker push gregology/pavlov-server:0.22
+docker tag gregology/pavlov-server:0.22 gregology/pavlov-server:latest
 docker push gregology/pavlov-server:latest
 ```
