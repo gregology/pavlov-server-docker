@@ -16,9 +16,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Optionally define a port environment variable (for Pavlov)
 ENV PORT=7777
 
-# 1) Install necessary dependencies, including ca-certificates (important for secure downloads)
+# 1) Install necessary dependencies, including ca-certificates and gosu
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gdb curl wget lib32gcc-s1 libc++-dev unzip nano cron ca-certificates \
+    && apt-get install -y --no-install-recommends \
+       gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # 2) Update CA certificates to ensure HTTPS downloads can be trusted
@@ -58,7 +60,7 @@ RUN ${STEAMCMD_DIR}/steamcmd.sh +login anonymous +app_update 1007 +quit \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/.steam/sdk64/steamclient.so" \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/pavlovserver/Pavlov/Binaries/Linux/steamclient.so"
 
-# 9) Switch back to root to fix libc++ symlink
+# 9) Switch back to root to fix libc++ symlink and install gosu
 USER root
 RUN rm /usr/lib/x86_64-linux-gnu/libc++.so \
     && ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so
@@ -72,10 +74,11 @@ USER steam
 # Make PavlovServer script executable
 RUN chmod +x /home/steam/pavlovserver/PavlovServer.sh
 
-# Copy in your start/update scripts
+# Copy in your start/update scripts and entrypoint
 COPY --chown=steam:steam pavlov_start.sh /home/steam/pavlov_start.sh
 COPY --chown=steam:steam pavlov_update.sh /home/steam/pavlov_update.sh
-RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh
+COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
+RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh /home/steam/entrypoint.sh
 
 # (Optional) Create a logs dir for the update script
 RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_logs/pavlov_update.sh.log
@@ -83,5 +86,5 @@ RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_l
 # 12) Expose the server port (UDP). We'll expose 7777/udp
 EXPOSE 7777/udp
 
-# 13) Default startup command - calls our start script
-CMD ["/home/steam/pavlov_start.sh"]
+# 13) Set the entrypoint
+ENTRYPOINT ["/home/steam/entrypoint.sh"]
