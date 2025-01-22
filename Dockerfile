@@ -10,21 +10,25 @@
 #
 FROM ubuntu:22.04
 
-# Avoid some interactive prompts during install
+# Avoid interactive prompts during install
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Optionally define a port environment variable (for Pavlov)
+# Define port environment variable
 ENV PORT=7777
 
-# 1) Install necessary dependencies, including ca-certificates and gosu
+# 1) Install necessary dependencies, including ca-certificates
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gdb curl wget lib32gcc-s1 libc++-dev unzip nano cron ca-certificates \
-    && apt-get install -y --no-install-recommends \
-       gosu \
+    gdb curl wget lib32gcc-s1 libc++-dev unzip nano cron ca-certificates locales \
     && rm -rf /var/lib/apt/lists/*
 
-# 2) Update CA certificates to ensure HTTPS downloads can be trusted
-RUN update-ca-certificates
+# 2) Configure locale to fix locale warnings
+RUN locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    && export LANG=en_US.UTF-8
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 # 3) Create 'steam' group with GID 1000
 RUN groupadd --gid 1000 steam
@@ -60,31 +64,34 @@ RUN ${STEAMCMD_DIR}/steamcmd.sh +login anonymous +app_update 1007 +quit \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/.steam/sdk64/steamclient.so" \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/pavlovserver/Pavlov/Binaries/Linux/steamclient.so"
 
-# 9) Switch back to root to fix libc++ symlink and install gosu
+# 9) Switch back to root to fix libc++ symlink and handle ownership
 USER root
+
+# Fix libc++ symlink
 RUN rm /usr/lib/x86_64-linux-gnu/libc++.so \
     && ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so
 
-# 10) Ensure steam owns the pavlovserver folder so it can write custom maps/logs
+# Ensure steam owns the pavlovserver folder so it can write custom maps/logs
 RUN chown -R steam:steam /home/steam/pavlovserver
 
-# 11) Switch back to steam user
+# 10) Switch back to steam user
 USER steam
 
 # Make PavlovServer script executable
 RUN chmod +x /home/steam/pavlovserver/PavlovServer.sh
 
-# Copy in your start/update scripts and entrypoint
+# Copy in your start/update scripts
 COPY --chown=steam:steam pavlov_start.sh /home/steam/pavlov_start.sh
 COPY --chown=steam:steam pavlov_update.sh /home/steam/pavlov_update.sh
-COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
-RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh /home/steam/entrypoint.sh
+
+# Make scripts executable
+RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh
 
 # (Optional) Create a logs dir for the update script
 RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_logs/pavlov_update.sh.log
 
-# 12) Expose the server port (UDP). We'll expose 7777/udp
+# 11) Expose the server port (UDP)
 EXPOSE 7777/udp
 
-# 13) Set the entrypoint
-ENTRYPOINT ["/home/steam/entrypoint.sh"]
+# 12) Set startup command
+CMD ["/home/steam/pavlov_start.sh"]
