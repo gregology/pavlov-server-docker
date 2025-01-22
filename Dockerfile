@@ -5,6 +5,7 @@
 #   - Downloads Pavlov server files (PC non-beta by default)
 #   - Copies steamclient.so
 #   - Fixes libc++ symlink
+#   - Sets specific UID and GID for steam user
 #   - Exposes default port (7777/udp)
 #
 FROM ubuntu:22.04
@@ -23,15 +24,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # 2) Update CA certificates to ensure HTTPS downloads can be trusted
 RUN update-ca-certificates
 
-# 3) Create a 'steam' user with home directory
+# 3) Create 'steam' group with GID 1000
 RUN groupadd --gid 1000 steam
+
+# 4) Create 'steam' user with UID 1000 and assign to 'steam' group
 RUN useradd --create-home --no-log-init --shell /bin/bash --uid 1000 --gid 1000 steam
 
-# 4) Switch to 'steam' user context
+# 5) Switch to 'steam' user context
 USER steam
 WORKDIR /home/steam
 
-# 5) Download and install SteamCMD via wget
+# 6) Download and install SteamCMD via wget
 RUN mkdir -p /home/steam/Steam \
     && cd /home/steam/Steam \
     && wget --progress=dot:giga --no-check-certificate \
@@ -39,40 +42,37 @@ RUN mkdir -p /home/steam/Steam \
     && tar -xvzf steamcmd_linux.tar.gz \
     && rm steamcmd_linux.tar.gz
 
-# Set environment var to point to SteamCMD directory
+# Set environment variable to point to SteamCMD directory
 ENV STEAMCMD_DIR="/home/steam/Steam"
 
-# 6) Install Pavlov server (PC non-beta by default; change -beta if needed)
+# 7) Install Pavlov server (PC non-beta by default; change -beta if needed)
 RUN ${STEAMCMD_DIR}/steamcmd.sh \
       +force_install_dir /home/steam/pavlovserver \
       +login anonymous \
       +app_update 622970 -beta default \
       +quit
 
-# 7) Update Steamworks SDK Redist & copy steamclient.so
-RUN ${STEAMCMD_DIR}/steamcmd.sh \
-      +login anonymous \
-      +app_update 1007 \
-      +quit \
+# 8) Update Steamworks SDK Redist & copy steamclient.so
+RUN ${STEAMCMD_DIR}/steamcmd.sh +login anonymous +app_update 1007 +quit \
     && mkdir -p /home/steam/.steam/sdk64 \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/.steam/sdk64/steamclient.so" \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/pavlovserver/Pavlov/Binaries/Linux/steamclient.so"
 
-# 8) Switch back to root to fix libc++ symlink
+# 9) Switch back to root to fix libc++ symlink
 USER root
-# Patched issue since v29
-RUN rm /usr/lib/x86_64-linux-gnu/libc++.so 
-RUN ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so 
+RUN rm /usr/lib/x86_64-linux-gnu/libc++.so \
+    && ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so
 
-# 8) Ensure steam owns the pavlovserver folder so it can write custom maps/logs
+# 10) Ensure steam owns the pavlovserver folder so it can write custom maps/logs
 RUN chown -R steam:steam /home/steam/pavlovserver
-RUN chmod -R 777 /home/steam/pavlovserver
 
-# 9) Switch back to steam user, adjust permissions, copy scripts
+# 11) Switch back to steam user
 USER steam
+
+# Make PavlovServer script executable
 RUN chmod +x /home/steam/pavlovserver/PavlovServer.sh
 
-# Copy your start/update scripts from local into container
+# Copy in your start/update scripts
 COPY --chown=steam:steam pavlov_start.sh /home/steam/pavlov_start.sh
 COPY --chown=steam:steam pavlov_update.sh /home/steam/pavlov_update.sh
 RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh
@@ -80,8 +80,8 @@ RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh
 # (Optional) Create a logs dir for the update script
 RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_logs/pavlov_update.sh.log
 
-# 10) Expose the server port (UDP). We'll expose 7777/udp
+# 12) Expose the server port (UDP). We'll expose 7777/udp
 EXPOSE 7777/udp
 
-# 11) Default startup command - calls our start script
+# 13) Default startup command - calls our start script
 CMD ["/home/steam/pavlov_start.sh"]
