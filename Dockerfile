@@ -16,9 +16,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Define port environment variable
 ENV PORT=7777
 
-# 1) Install necessary dependencies, including ca-certificates
+# 1) Install necessary dependencies, including ca-certificates and gosu
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gdb curl wget lib32gcc-s1 libc++-dev unzip nano cron ca-certificates locales \
+    gdb curl wget lib32gcc-s1 libc++-dev unzip nano cron ca-certificates locales gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # 2) Configure locale to fix locale warnings
@@ -80,12 +80,13 @@ USER steam
 # Make PavlovServer script executable
 RUN chmod +x /home/steam/pavlovserver/PavlovServer.sh
 
-# Copy in your start/update scripts
+# Copy in your start/update scripts and entrypoint
 COPY --chown=steam:steam pavlov_start.sh /home/steam/pavlov_start.sh
 COPY --chown=steam:steam pavlov_update.sh /home/steam/pavlov_update.sh
+COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
 
 # Make scripts executable
-RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh
+RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh /home/steam/entrypoint.sh
 
 # (Optional) Create a logs dir for the update script
 RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_logs/pavlov_update.sh.log
@@ -94,4 +95,4 @@ RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_l
 EXPOSE 7777/udp
 
 # 12) Set startup command
-CMD ["/home/steam/pavlov_start.sh"]
+ENTRYPOINT ["/home/steam/entrypoint.sh"]
