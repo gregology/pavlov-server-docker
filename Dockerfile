@@ -45,10 +45,8 @@ RUN $STEAMCMD_DIR/steamcmd.sh \
     && $STEAMCMD_DIR/steamcmd.sh \
       +login anonymous \
       +app_update 1007 \
-      +quit
-
-# 6) Copy steamclient.so
-RUN mkdir -p /home/steam/.steam/sdk64 \
+      +quit \
+    && mkdir -p /home/steam/.steam/sdk64 \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/.steam/sdk64/steamclient.so" \
     && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/pavlovserver/Pavlov/Binaries/Linux/steamclient.so"
 
