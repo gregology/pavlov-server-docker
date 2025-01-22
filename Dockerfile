@@ -60,8 +60,9 @@ RUN ${STEAMCMD_DIR}/steamcmd.sh \
 
 # 8) Switch back to root to fix libc++ symlink
 USER root
-RUN rm /usr/lib/x86_64-linux-gnu/libc++.so \
-    && ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so
+# Patched issue since v29
+RUN rm /usr/lib/x86_64-linux-gnu/libc++.so 
+RUN ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so 
 
 # 8) Ensure steam owns the pavlovserver folder so it can write custom maps/logs
 RUN chown -R steam:steam /home/steam/pavlovserver
