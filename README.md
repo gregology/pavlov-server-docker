@@ -105,8 +105,8 @@ If you're having issues, please submit an [issue](https://github.com/gregology/p
 ### Build
 
 ```
-docker build -t gregology/pavlov-server:0.22 .
-docker push gregology/pavlov-server:0.22
-docker tag gregology/pavlov-server:0.22 gregology/pavlov-server:latest
+docker build -t gregology/pavlov-server:0.31 .
+docker push gregology/pavlov-server:0.31
+docker tag gregology/pavlov-server:0.31 gregology/pavlov-server:latest
 docker push gregology/pavlov-server:latest
 ```
