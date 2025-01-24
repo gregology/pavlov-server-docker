@@ -64,13 +64,19 @@ USER root
 RUN rm /usr/lib/x86_64-linux-gnu/libc++.so 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so 
 
-# 8) Ensure steam owns the pavlovserver folder so it can write custom maps/logs
+# 9) Ensure steam owns the pavlovserver folder so it can write custom maps/logs
 RUN chown -R steam:steam /home/steam/pavlovserver
-RUN chmod -R 777 /home/steam/pavlovserver
+RUN chmod -R 755 /home/steam/pavlovserver
 
-# 9) Switch back to steam user, adjust permissions, copy scripts
+# 10) Switch back to steam user, adjust permissions, copy scripts
 USER steam
 RUN chmod +x /home/steam/pavlovserver/PavlovServer.sh
+
+# Create necessary directories to avoid permission issues
+RUN mkdir -p /home/steam/pavlovserver/Pavlov/Saved/Logs \
+    && mkdir -p /home/steam/pavlovserver/Pavlov/Saved/Config/LinuxServer \
+    && mkdir -p /home/steam/pavlovserver/Pavlov/Saved/maps \
+    && mkdir -p /home/steam/pavlovserver/Pavlov/Saved/Config/CrashReportClient
 
 # Copy your start/update scripts from local into container
 COPY --chown=steam:steam pavlov_start.sh /home/steam/pavlov_start.sh
@@ -80,8 +86,8 @@ RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh
 # (Optional) Create a logs dir for the update script
 RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_logs/pavlov_update.sh.log
 
-# 10) Expose the server port (UDP). We'll expose 7777/udp
+# 11) Expose the server port (UDP). We'll expose 7777/udp
 EXPOSE 7777/udp
 
-# 11) Default startup command - calls our start script
+# 12) Default startup command - calls our start script
 CMD ["/home/steam/pavlov_start.sh"]
