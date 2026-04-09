@@ -1,0 +1,17 @@
+[/Script/Pavlov.DedicatedServer]
+bEnabled=true
+ServerName="My Pavlov Server"
+MaxPlayers=16
+ApiKey=""
+bSecured=true
+bCustomServer=true
+bVerboseLogging=false
+bCompetitive=false
+bWhitelist=false
+RefreshListTime=120
+LimitedAmmoType=0
+TickRate=90
+TimeLimit=60
+AFKTimeLimit=300
+MapRotation=(MapId="datacenter", GameMode="DM")
+MapRotation=(MapId="UGC2773760", GameMode="TDM")

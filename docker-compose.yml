@@ -1,0 +1,27 @@
+services:
+  pavlov:
+    build: .
+    image: gregology/pavlov-server:latest
+    container_name: pavlov-server
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "${GAME_PORT:-7777}:${GAME_PORT:-7777}/udp"
+      - "${SECONDARY_PORT:-8177}:${SECONDARY_PORT:-8177}/udp"
+      - "${RCON_PORT:-9100}:${RCON_PORT:-9100}/tcp"
+    env_file:
+      - .env
+    volumes:
+      - pavlov-data:/home/steam/pavlovserver
+      - pavlov-tmp:/tmp
+      # To bind-mount config files instead of using env vars, uncomment:
+      # - ./config/Game.ini:/home/steam/pavlovserver/Pavlov/Saved/Config/LinuxServer/Game.ini
+      # - ./config/RconSettings.txt:/home/steam/pavlovserver/Pavlov/Saved/Config/RconSettings.txt
+      # - ./config/mods.txt:/home/steam/pavlovserver/Pavlov/Saved/Config/mods.txt
+      # - ./config/blacklist.txt:/home/steam/pavlovserver/Pavlov/Saved/Config/blacklist.txt
+      # - ./config/whitelist.txt:/home/steam/pavlovserver/Pavlov/Saved/Config/whitelist.txt
+
+volumes:
+  pavlov-data:
+  pavlov-tmp:

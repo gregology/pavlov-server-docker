@@ -1,0 +1,2 @@
+# Whitelisted player Steam64 IDs, one per line.
+# Only used when bWhitelist=true in Game.ini.

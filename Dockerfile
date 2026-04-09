@@ -1,93 +1,60 @@
-#
-# Dockerfile for a Pavlov VR Dedicated Server (Ubuntu 22.04)
-#   - Installs required packages
-#   - Installs SteamCMD via wget
-#   - Downloads Pavlov server files (PC non-beta by default)
-#   - Copies steamclient.so
-#   - Fixes libc++ symlink
-#   - Exposes default port (7777/udp)
-#
-FROM ubuntu:22.04
+FROM cm2network/steamcmd:root
 
-# Avoid some interactive prompts during install
-ENV DEBIAN_FRONTEND=noninteractive
+LABEL maintainer="gregology" \
+      description="Pavlov VR Dedicated Server" \
+      source="https://github.com/gregology/pavlov-server-docker"
 
-# Optionally define a port environment variable (for Pavlov)
-ENV PORT=7777
-
-# 1) Install necessary dependencies, including ca-certificates (important for secure downloads)
+# Install Pavlov's additional dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gdb curl wget lib32gcc-s1 libc++-dev unzip nano cron ca-certificates \
+    libc++-dev \
+    gdb \
     && rm -rf /var/lib/apt/lists/*
 
-# 2) Update CA certificates to ensure HTTPS downloads can be trusted
-RUN update-ca-certificates
+# Fix libc++ symlink (required since Pavlov v29)
+RUN rm -f /usr/lib/x86_64-linux-gnu/libc++.so \
+    && ln -sf /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so
 
-# 3) Create a 'steam' user with home directory
-RUN groupadd --gid 1000 steam
-RUN useradd --create-home --no-log-init --shell /bin/bash --uid 1000 --gid 1000 steam
+# Create directory structure Pavlov expects
+RUN mkdir -p \
+    /home/steam/pavlovserver/Pavlov/Saved/Config/LinuxServer \
+    /home/steam/pavlovserver/Pavlov/Saved/Config/CrashReportClient \
+    /home/steam/pavlovserver/Pavlov/Saved/Logs \
+    /home/steam/pavlovserver/Pavlov/Saved/maps \
+    /home/steam/pavlovserver/Pavlov/Binaries/Linux \
+    && chown -R steam:steam /home/steam/pavlovserver
 
-# 4) Switch to 'steam' user context
+COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
+RUN chmod +x /home/steam/entrypoint.sh
+
+ENV SERVER_NAME="Pavlov VR Server" \
+    MAX_PLAYERS=16 \
+    API_KEY="" \
+    SERVER_PASSWORD="" \
+    GAME_PORT=7777 \
+    RCON_ENABLED=true \
+    RCON_PASSWORD="" \
+    RCON_PORT=9100 \
+    BETA_BRANCH=default \
+    SECURED=true \
+    CUSTOM_SERVER=true \
+    VERBOSE_LOGGING=false \
+    COMPETITIVE=false \
+    WHITELIST=false \
+    REFRESH_LIST_TIME=120 \
+    LIMITED_AMMO_TYPE=0 \
+    TICK_RATE=90 \
+    TIME_LIMIT=60 \
+    AFK_TIME_LIMIT=300 \
+    BALANCE_TABLE_URL="" \
+    MAP_ROTATION='(MapId="datacenter", GameMode="DM")' \
+    ADDITIONAL_GAME_INI="" \
+    SKIP_UPDATE=false
+
+VOLUME ["/home/steam/pavlovserver", "/tmp"]
+
+EXPOSE 7777/udp 8177/udp 9100/tcp
+
 USER steam
 WORKDIR /home/steam
 
-# 5) Download and install SteamCMD via wget
-RUN mkdir -p /home/steam/Steam \
-    && cd /home/steam/Steam \
-    && wget --progress=dot:giga --no-check-certificate \
-       "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" \
-    && tar -xvzf steamcmd_linux.tar.gz \
-    && rm steamcmd_linux.tar.gz
-
-# Set environment var to point to SteamCMD directory
-ENV STEAMCMD_DIR="/home/steam/Steam"
-
-# 6) Install Pavlov server (PC non-beta by default; change -beta if needed)
-RUN ${STEAMCMD_DIR}/steamcmd.sh \
-      +force_install_dir /home/steam/pavlovserver \
-      +login anonymous \
-      +app_update 622970 -beta default \
-      +quit
-
-# 7) Update Steamworks SDK Redist & copy steamclient.so
-RUN ${STEAMCMD_DIR}/steamcmd.sh \
-      +login anonymous \
-      +app_update 1007 \
-      +quit \
-    && mkdir -p /home/steam/.steam/sdk64 \
-    && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/.steam/sdk64/steamclient.so" \
-    && cp "/home/steam/Steam/steamapps/common/Steamworks SDK Redist/linux64/steamclient.so" "/home/steam/pavlovserver/Pavlov/Binaries/Linux/steamclient.so"
-
-# 8) Switch back to root to fix libc++ symlink
-USER root
-# Patched issue since v29
-RUN rm /usr/lib/x86_64-linux-gnu/libc++.so 
-RUN ln -s /usr/lib/x86_64-linux-gnu/libc++.so.1 /usr/lib/x86_64-linux-gnu/libc++.so 
-
-# 9) Ensure steam owns the pavlovserver folder so it can write custom maps/logs
-RUN chown -R steam:steam /home/steam/pavlovserver
-RUN chmod -R 755 /home/steam/pavlovserver
-
-# 10) Switch back to steam user, adjust permissions, copy scripts
-USER steam
-RUN chmod +x /home/steam/pavlovserver/PavlovServer.sh
-
-# Create necessary directories to avoid permission issues
-RUN mkdir -p /home/steam/pavlovserver/Pavlov/Saved/Logs \
-    && mkdir -p /home/steam/pavlovserver/Pavlov/Saved/Config/LinuxServer \
-    && mkdir -p /home/steam/pavlovserver/Pavlov/Saved/maps \
-    && mkdir -p /home/steam/pavlovserver/Pavlov/Saved/Config/CrashReportClient
-
-# Copy your start/update scripts from local into container
-COPY --chown=steam:steam pavlov_start.sh /home/steam/pavlov_start.sh
-COPY --chown=steam:steam pavlov_update.sh /home/steam/pavlov_update.sh
-RUN chmod +x /home/steam/pavlov_start.sh /home/steam/pavlov_update.sh
-
-# (Optional) Create a logs dir for the update script
-RUN mkdir -p /home/steam/pavlov_update_logs && touch /home/steam/pavlov_update_logs/pavlov_update.sh.log
-
-# 11) Expose the server port (UDP). We'll expose 7777/udp
-EXPOSE 7777/udp
-
-# 12) Default startup command - calls our start script
-CMD ["/home/steam/pavlov_start.sh"]
+ENTRYPOINT ["/home/steam/entrypoint.sh"]
